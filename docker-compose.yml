@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: banking_postgres
+    environment:
+      POSTGRES_USER: engine_admin
+      POSTGRES_PASSWORD: engine_secure_password
+      POSTGRES_DB: banking_core_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: banking_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:
