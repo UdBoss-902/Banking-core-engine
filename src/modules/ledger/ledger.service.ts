@@ -4,8 +4,8 @@ import { PoolClient } from 'pg';
 export interface RecordTransactionParams {
   reference: string;
   idempotencyKey: string;
-  sourceAccountId: string;      // Account DEBITED (Liability decreases)
-  destinationAccountId: string; // Account CREDITED (Liability increases)
+  sourceAccountId: string;      // Account DEBITED
+  destinationAccountId: string; // Account CREDITED
   amount: number;               // Must be positive
   currency: string;
   description: string;
@@ -74,7 +74,7 @@ export class LedgerService {
       const sortedAccountIds = [sourceAccountId, destinationAccountId].sort();
       
       const accountsResult = await client.query(
-        `SELECT id, currency, status 
+        `SELECT id, currency, type, status 
          FROM accounts 
          WHERE id IN ($1, $2) 
          FOR UPDATE`,
@@ -96,10 +96,12 @@ export class LedgerService {
         throw new Error(`Currency mismatch. Transaction currency [${currency}] must match account currencies.`);
       }
 
-      // 3. Balance Check: Calculate real-time source account balance within transaction block
-      const sourceBalance = await this.getAccountBalance(sourceAccountId, client);
-      if (sourceBalance < amount) {
-        throw new Error(`Insufficient balance. Account [${sourceAccountId}] balance is ${sourceBalance}, requested ${amount}.`);
+      // 3. Balance Check: Enforce balance limits on customer wallets (LIABILITY accounts)
+      if (sourceAccount.type === 'LIABILITY') {
+        const sourceBalance = await this.getAccountBalance(sourceAccountId, client);
+        if (sourceBalance < amount) {
+          throw new Error(`Insufficient balance. Account [${sourceAccountId}] balance is ${sourceBalance}, requested ${amount}.`);
+        }
       }
 
       // 4. Create Journal Header

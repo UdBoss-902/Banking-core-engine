@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: Banking Core Engine API
+  version: 1.0.0
+  description: High-throughput, double-entry financial ledger engine with atomic isolation and Redis idempotency locks.
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: System operational status
+  /api/v1/accounts:
+    post:
+      summary: Create a ledger account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [accountNumber, currency, type]
+              properties:
+                accountNumber: { type: string, example: "ACC-USER-101" }
+                currency: { type: string, example: "USD" }
+                type: { type: string, enum: [ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE], example: "LIABILITY" }
+      responses:
+        '201': { description: Account created successfully }
+        '400': { description: Missing or invalid parameters }
+        '409': { description: Account number already exists }
+  /api/v1/accounts/{accountId}/balance:
+    get:
+      summary: Get real-time derived balance
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Balance computed from immutable ledger entries }
+  /api/v1/transfers:
+    post:
+      summary: Post an atomic double-entry transfer
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, example: "IDEM-KEY-999" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reference, sourceAccountId, destinationAccountId, amount, currency]
+              properties:
+                reference: { type: string, example: "REF-TRANS-101" }
+                sourceAccountId: { type: string, format: uuid }
+                destinationAccountId: { type: string, format: uuid }
+                amount: { type: number, example: 250.00 }
+                currency: { type: string, example: "USD" }
+                description: { type: string, example: "P2P Payment" }
+      responses:
+        '201': { description: Double-entry transaction posted successfully }
+        '400': { description: Invalid transfer parameters or insufficient balance }
+        '409': { description: Concurrent or duplicate request blocked }
