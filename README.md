@@ -1,8 +1,14 @@
-# Banking Core Engine
-
 A production-grade, high-throughput financial ledger engine built with **Node.js**, **TypeScript**, **PostgreSQL**, and **Redis**. Engineered with double-entry accounting guarantees, deterministic pessimistic row locking (`FOR UPDATE`), and atomic distributed idempotency locks to eliminate double-spend vulnerabilities and race conditions under high concurrency.
 
-## ??? Core Capabilities
+---
+
+## 🌐 Live Interactive Testing Dashboard
+
+You can test all endpoints directly in your browser without installing dependencies or local setup:
+
+👉 **[Live Swagger UI Documentation](https://banking-core-engine.onrender.com/docs)**
+
+## 🛠️ Core Capabilities
 
 | Feature | Technical Implementation |
 | :--- | :--- |
@@ -14,50 +20,31 @@ A production-grade, high-throughput financial ledger engine built with **Node.js
 
 ---
 
-## ?? Quick Start (Local Setup)
+## 🧪 Live cURL API Testing Commands
 
-### 1. Environment Configuration
+## 1. System Health Check
+curl -X GET [https://banking-core-engine.onrender.com/health](https://banking-core-engine.onrender.com/health) ?
 
-Create a `.env` file in the project root:
-
-```env
-PORT=3000
-DATABASE_URL=postgres://postgres:your_password@localhost:5432/banking_core_dev
-REDIS_URL=redis://default:your_redis_password@your_host:16453
-2. Install & Start Development Server
-Bash
-# Install dependencies
-npm install
-
-# Start hot-reloading development server
-npm run dev
-The server will initialize on http://localhost:3000. You can access interactive Swagger documentation at http://localhost:3000/docs.
-
-?? cURL API Usage Examples
-1. Health Check
-Bash
-curl -X GET http://localhost:3000/health
-2. Create User Account (LIABILITY)
-Bash
-curl -X POST http://localhost:3000/api/v1/accounts \
+## 2. Create User Wallet Account(Liability)
+curl -X POST [https://banking-core-engine.onrender.com/api/v1/accounts](https://banking-core-engine.onrender.com/api/v1/accounts) \
   -H "Content-Type: application/json" \
   -d '{
     "accountNumber": "ACC-USER-101",
     "currency": "USD",
     "type": "LIABILITY"
   }'
-3. Create Bank Clearing Account (ASSET)
-Bash
-curl -X POST http://localhost:3000/api/v1/accounts \
+
+  ## 3. Create Bank Reserve Account(Asset)
+  curl -X POST [https://banking-core-engine.onrender.com/api/v1/accounts](https://banking-core-engine.onrender.com/api/v1/accounts) \
   -H "Content-Type: application/json" \
   -d '{
     "accountNumber": "ACC-CLEARING-001",
     "currency": "USD",
     "type": "ASSET"
   }'
-4. Post Atomic Double-Entry Transfer
-Bash
-curl -X POST http://localhost:3000/api/v1/transfers \
+
+  ## 4. Post Atomic Double Entry Transfer
+  curl -X POST [https://banking-core-engine.onrender.com/api/v1/transfers](https://banking-core-engine.onrender.com/api/v1/transfers) \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: IDEM-PAYMENT-8801" \
   -d '{
@@ -68,53 +55,16 @@ curl -X POST http://localhost:3000/api/v1/transfers \
     "currency": "USD",
     "description": "P2P Payment"
   }'
-5. Check Real-Time Derived Balance
-Bash
-curl -X GET http://localhost:3000/api/v1/accounts/<ACCOUNT_UUID>/balance
-?? Docker & Production Deployment
-Local Docker Build
-Bash
-# Build lightweight multi-stage image
-docker build -t banking-core-engine .
 
-# Run containerized service
-docker run -p 3000:3000 --env-file .env banking-core-engine 
+  ## 5. Check Real-Time Derived Balance
+  curl -X GET [https://banking-core-engine.onrender.com/api/v1/accounts/](https://banking-core-engine.onrender.com/api/v1/accounts/)<ACCOUNT_UUID>/balance
 
-ARCHITECTUTAL DIAGRAM: 
-┌─────────────────────────┐
-                       │   Client / HTTP Request │
-                       └────────────┬────────────┘
-                                    │
-                                    ▼
-                       ┌─────────────────────────┐
-                       │  Sliding-Window Limiter │ (Redis ZSET)
-                       └────────────┬────────────┘
-                                    │
-                                    ▼
-                       ┌─────────────────────────┐
-                       │  Idempotency Lock (SET) │ (Redis SET NX)
-                       └────────────┬────────────┘
-                                    │
-                                    ▼
-                        Express HTTP Middleware
-                                    │
-                                    ▼
-                       ┌─────────────────────────┐
-                       │ Ledger Transaction      │
-                       │ (BEGIN...COMMIT)        │
-                       └────────────┬────────────┘
-                                    │
-             ┌──────────────────────┴──────────────────────┐
-             ▼                                             ▼
-  ┌──────────────────────┐                     ┌──────────────────────┐
-  │ Account Locks        │                     │ Ledger Entries       │
-  │ SELECT FOR UPDATE    │                     │ Debit / Credit Lines │
-  └──────────────────────┘                     └──────────────────────┘
-             │                                             │
-             └──────────────────────┬──────────────────────┘
-                                    │
-                                    ▼
-                         ┌────────────────────┐
-                         │ Immutable Postgres │
-                         │ Database           │
-                         └────────────────────┘
+
+  ## Local Setup and Deplopment
+  # Clone and install dependencies
+git clone [https://github.com/UdBoss-902/Banking-core-engine.git](https://github.com/UdBoss-902/Banking-core-engine.git)
+cd Banking-core-engine
+npm install
+
+# Start development server
+npm run dev
