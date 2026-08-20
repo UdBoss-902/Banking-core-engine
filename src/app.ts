@@ -9,7 +9,11 @@ import { processTransfer } from './modules/transfers/transfer.controller.js';
 
 const app = express();
 const swaggerDocument = YAML.load(path.join(process.cwd(), 'docs', 'openapi.yaml'));
+const PORT = process.env.PORT || 3000;
 
+app.listen(Number(PORT), '0.0.0.0', () => {
+  console.log(`Banking Core Engine running on port ${PORT}`);
+});
 app.use(express.json());
 
 // Global Rate Limiter: 100 requests per 15 minutes per IP
